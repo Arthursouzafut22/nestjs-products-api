@@ -1,4 +1,10 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -41,5 +47,27 @@ export class AuthService {
     return { token: token };
   }
 
-  getUser(id: number) {}
+  async getUser(idUser: number, token: string): Promise<{ id: number; name: string; email: string }> {
+    if (!token) {
+      throw new UnauthorizedException();
+    }
+
+    if (!idUser || idUser <= 0) {
+      throw new BadRequestException('Invalid user id');
+    }
+
+    const FindUser = await this.prisma.user.findUnique({
+      where: { id: Number(idUser) },
+    });
+
+    if (!FindUser) {
+      throw new NotFoundException('Invalid user');
+    }
+
+    const { id, name, email } = FindUser;
+
+    const user = { id, name, email };
+
+    return user;
+  }
 }

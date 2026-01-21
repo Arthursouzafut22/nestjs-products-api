@@ -1,8 +1,17 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from './auth.guard';
 
-// @UseGuards(AuthGuard)
 @Controller('auth')
 export class AuthController {
   constructor(private readonly user: AuthService) {}
@@ -13,9 +22,9 @@ export class AuthController {
     return this.user.signIn(email, password);
   }
 
-  @Get(":id")
-  getUser(@Param("id") id: number){
-    return this.user.getUser(id)
-
+  @UseGuards(AuthGuard)
+  @Get(':id')
+  getUser(@Param('id') idUser: number, @Headers('authorization') token: string) {
+    return this.user.getUser(idUser, token);
   }
 }
