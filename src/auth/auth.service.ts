@@ -3,18 +3,20 @@ import { PrismaService } from 'prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserServiceValidate } from './testeAinda';
 import { PasswordsAreNotEqualError } from './erros';
 
 @Injectable()
 export class AuthService {
-  expirationToken: number;
+  private expirationToken: number;
+  private token: string;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly configService: ConfigService,
   ) {
     this.expirationToken = this.configService.get<number>('JWT_EXPIRATION_TIME') as number;
+    this.token = this.configService.get<string>('JWT_SECRET') as string;
   }
 
   async signIn(email: string, password: string): Promise<{ token: string }> {
@@ -23,7 +25,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new ConflictException('Esse email não está cadastrado!');
+      throw new ConflictException('Email ou senha inválidos');
     }
 
     const comparePassword = await bcrypt.compare(password, user?.password as string);
@@ -34,8 +36,10 @@ export class AuthService {
 
     const payLoad = { sub: user.id, tokenExpiration: this.expirationToken };
 
-    const token = await this.jwt.signAsync(payLoad);
+    const token = await this.jwt.signAsync(payLoad, { secret: this.token });
 
     return { token: token };
   }
+
+  getUser(id: number) {}
 }

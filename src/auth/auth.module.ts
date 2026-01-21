@@ -6,7 +6,7 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [
     JwtModule.registerAsync({
       global: true,
-      imports: [],
+      imports: [ConfigService],
       // eslint-disable-next-line @typescript-eslint/require-await
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET'),
