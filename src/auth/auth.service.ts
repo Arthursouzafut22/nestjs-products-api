@@ -10,6 +10,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PasswordsAreNotEqualError } from './erros';
+import { AuthEntity } from './entities/auth.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,7 +26,7 @@ export class AuthService {
     this.token = this.configService.get<string>('JWT_SECRET') as string;
   }
 
-  async signIn(email: string, password: string): Promise<{ token: string }> {
+  async signIn(email: string, password: string): Promise<{ id: number; token: string }> {
     const user = await this.prisma.user.findUnique({
       where: { email: email },
     });
@@ -44,10 +45,10 @@ export class AuthService {
 
     const token = await this.jwt.signAsync(payLoad, { secret: this.token });
 
-    return { token: token };
+    return { id: payLoad.sub, token: token };
   }
 
-  async getUser(idUser: number, token: string): Promise<{ id: number; name: string; email: string }> {
+  async getUser(idUser: number, token: string): Promise<AuthEntity> {
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -56,15 +57,15 @@ export class AuthService {
       throw new BadRequestException('Invalid user id');
     }
 
-    const FindUser = await this.prisma.user.findUnique({
+    const findUser = await this.prisma.user.findUnique({
       where: { id: Number(idUser) },
     });
 
-    if (!FindUser) {
+    if (!findUser) {
       throw new NotFoundException('Invalid user');
     }
 
-    const { id, name, email } = FindUser;
+    const { id, name, email } = findUser;
 
     const user = { id, name, email };
 
