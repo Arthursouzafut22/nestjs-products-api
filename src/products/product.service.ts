@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
+import { ProductsDto } from './dto-products';
 
 @Injectable()
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getProducts() {
+  async getProducts(): Promise<ProductsDto[]> {
     const products = await this.prisma.products.findMany({
       include: {
         variations: {
@@ -34,5 +35,24 @@ export class ProductService {
         })),
       };
     });
+  }
+
+  async findByCategory(category: string) {
+    const productsByCategory = await this.prisma.products.findMany({
+      where: { category: category },
+      include: {
+        variations: {
+          include: { images: true },
+        },
+      },
+    });
+
+    if (productsByCategory.length === 0) {
+      return {
+        message: 'Nenhum produto encontrado para a categoria informada',
+      };
+    }
+
+    return productsByCategory;
   }
 }
