@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { ProductsDto } from './dto-products';
 
@@ -6,6 +6,7 @@ import { ProductsDto } from './dto-products';
 export class ProductService {
   constructor(private readonly prisma: PrismaService) {}
 
+  // Service para retorna todos produtos
   async getProducts(): Promise<ProductsDto[]> {
     const products = await this.prisma.products.findMany({
       include: {
@@ -37,6 +38,22 @@ export class ProductService {
     });
   }
 
+  async getProductById(id: number) {
+    if (id <= 0) {
+      throw new BadRequestException('ID não existe');
+    }
+    const product = await this.prisma.products.findUnique({
+      where: { id: id },
+    });
+
+    if (!product) {
+      throw new NotFoundException('Produto não encontrado');
+    }
+
+    return product;
+  }
+
+  // Service para filtra produtos pela url
   async findByCategory(category: string) {
     const productsByCategory = await this.prisma.products.findMany({
       where: { category: category },

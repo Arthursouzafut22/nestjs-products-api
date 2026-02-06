@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ProductsDto } from './dto-products';
 
@@ -9,6 +9,11 @@ export class ProductsController {
   @Get()
   async getProducts(): Promise<ProductsDto[]> {
     return this.productService.getProducts();
+  }
+
+  @Get(":id")
+  getProductById(@Param("id", new ParseIntPipe()) id: number){
+    return this.productService.getProductById(id)
   }
 
   @Get('/category')
