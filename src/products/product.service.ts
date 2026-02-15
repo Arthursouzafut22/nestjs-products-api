@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service';
-import { ProductsDto } from './dto-products';
+// import { PrismaService } from 'prisma/prisma.service';
+import { ProductsDto } from './dto/dto-products';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { PaginationDto } from './dto/pagination.dto';
 
 @Injectable()
 export class ProductService {
@@ -38,7 +40,7 @@ export class ProductService {
     });
   }
 
-  async getProductById(id: number) {
+  async getProductById(id: number): Promise<ProductsDto> {
     if (id <= 0) {
       throw new BadRequestException('ID não existe');
     }
@@ -71,5 +73,29 @@ export class ProductService {
     }
 
     return productsByCategory;
+  }
+
+  // Paginação de produtos...
+  async findAllPagination(paginationDto: PaginationDto) {
+    const { limit, page } = paginationDto;
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [product, total] = await Promise.all([
+      this.prisma.products.findMany({
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.products.count(),
+    ]);
+
+    return {
+      data: product,
+      meta: {
+        total,
+        page,
+        lastPage: Math.ceil(total / Number(limit)),
+      },
+    };
   }
 }

@@ -6,12 +6,12 @@ import { Observable } from 'rxjs';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  private teste: string;
+  private secret: string;
   constructor(
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
   ) {
-    this.teste = this.config.get<string>('JWT_SECRET') as string;
+    this.secret = this.config.get<string>('JWT_SECRET') as string;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payLod = await this.jwt.verifyAsync(token, { secret: this.teste });
+      const payLod = await this.jwt.verifyAsync(token, { secret: this.secret });
       request['user'] = payLod;
     } catch {
       throw new UnauthorizedException();

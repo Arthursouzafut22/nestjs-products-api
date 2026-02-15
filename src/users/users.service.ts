@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'prisma/prisma.service';
+// import { PrismaService } from 'prisma/prisma.service';
 import { UserDto } from './dto/dto-user';
 import { User } from 'generated/prisma';
 import * as bcrypt from 'bcrypt';
 import { UsersEmailExistsError } from './erros';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +19,7 @@ export class UsersService {
       throw new UsersEmailExistsError();
     }
 
-    const salt = await bcrypt.genSalt();
+    const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(user.password, salt);
 
     return this.prisma.user.create({

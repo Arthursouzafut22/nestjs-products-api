@@ -1,6 +1,6 @@
 import { Decimal } from "@prisma/client/runtime/index-browser";
 
-export interface ProductsDto {
+export class ProductsDto {
   id: number;
   name: string;
   price: Decimal;
@@ -9,7 +9,7 @@ export interface ProductsDto {
   category: string;
   description: string;
   createdAt: Date;
-  variations: {
+  variations?: {
     id: number;
     key: string;
     productId: number;
