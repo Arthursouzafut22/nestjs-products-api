@@ -25,6 +25,5 @@ export class ProductsController {
   @Get()
   findAllPagination(@Query() paginationDto: PaginationDto) {
     return this.productService.findAllPagination(paginationDto);
-
   }
 }
