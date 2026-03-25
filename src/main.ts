@@ -7,6 +7,8 @@ import { PasswordsAreNotEqualFilter } from './auth/filters/passwords-are-not-equ
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors();
+
   app.useGlobalFilters(new UsersEmailExistsErrorFilter(), new PasswordsAreNotEqualFilter());
   app.useGlobalPipes(
     new ValidationPipe({
