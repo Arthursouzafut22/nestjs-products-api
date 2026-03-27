@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CreatePixPaymentDto } from 'src/payments/dto/create-pix-payment-dto';
 
@@ -12,25 +12,33 @@ export class PixService {
   }
 
   async generateQrCode(payload: CreatePixPaymentDto) {
-    if (payload.value < 0 || payload.value === 0) {
-      throw new BadRequestException('Valor inválido');
+    if (!payload?.value || payload.value <= 0) {
+      throw new BadRequestException('Valor deve ser maior que 0');
     }
 
-    if (payload.description.length > 90) {
-      throw new BadRequestException('Descrição muito longa');
+    if (payload?.description && payload.description.length > 90) {
+      throw new BadRequestException('Descrição deve ter no máximo 90 caracteres');
     }
 
-    const response = await fetch(this.url, {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        access_token: this.token,
-      },
-      body: JSON.stringify(payload),
-    });
+    try {
+      const response = await fetch(this.url, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          access_token: this.token,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const json = await response.json();
-    return json;
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new BadRequestException(data?.message || 'Erro ao gerar QR Code Pix');
+      }
+      return data;
+    } catch (error) {
+      throw new InternalServerErrorException('Erro ao comunicar com o serviço de pagamento');
+    }
   }
 }

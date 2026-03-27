@@ -10,4 +10,7 @@ export class PaymentsController {
   generatePixQrCode(@Body() payload: CreatePixPaymentDto) {
     return this.paymentsService.generateQrCode(payload);
   }
+
+  @Post('checkout/credit-card')
+  checkoutCreditCard(payload: any) {}
 }
